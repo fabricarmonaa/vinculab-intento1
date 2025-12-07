@@ -1,11 +1,11 @@
 import { pool } from '../config/database.js';
 
 export class VerificationRepository {
-  async createRequest({ studentId, schoolId }, connection = pool) {
+  async createRequest({ studentId, schoolId, status = 'PENDING' }, connection = pool) {
     const [result] = await connection.execute(
       `INSERT INTO verifications (student_id, school_id, status)
-       VALUES (?, ?, 'PENDING')`,
-      [studentId, schoolId]
+       VALUES (?, ?, ?)`,
+      [studentId, schoolId, status]
     );
     return { verificationId: result.insertId };
   }

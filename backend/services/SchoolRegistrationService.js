@@ -4,6 +4,7 @@ import { SchoolRegistrationRepository } from '../repositories/SchoolRegistration
 import { SchoolRepository } from '../repositories/SchoolRepository.js';
 import { UserRepository } from '../repositories/UserRepository.js';
 import { MailerService } from './MailerService.js';
+import { SchoolRegistrationStateMachine } from '../stateMachines/SchoolRegistrationStateMachine.js';
 
 export class SchoolRegistrationService {
   constructor() {
@@ -21,18 +22,18 @@ export class SchoolRegistrationService {
       address: payload.address,
       email: payload.email,
       phone: payload.phone,
+      status: SchoolRegistrationStateMachine.initial(),
     });
     return { message: 'Solicitud registrada en estado PENDING', ...result };
   }
 
   async decide(registrationId, decision) {
-    const allowed = ['APPROVED', 'REJECTED'];
-    if (!allowed.includes(decision)) throw new Error('Decisión inválida');
+    SchoolRegistrationStateMachine.assertKnown(decision);
 
     return withTransaction(async (connection) => {
       const registration = await this.registrationRepo.findById(registrationId);
       if (!registration) throw new Error('Registro no encontrado');
-      if (registration.status !== 'PENDING') throw new Error('Transición inválida');
+      SchoolRegistrationStateMachine.ensureTransition(registration.status, decision);
 
       await this.registrationRepo.updateStatus(connection, registrationId, decision);
 

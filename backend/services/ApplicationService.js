@@ -4,11 +4,7 @@ import { VerificationRepository } from '../repositories/VerificationRepository.j
 import { StudentRepository } from '../repositories/StudentRepository.js';
 import { OfferRepository } from '../repositories/OfferRepository.js';
 import { CompanyRepository } from '../repositories/CompanyRepository.js';
-
-const ALLOWED = {
-  SENT: ['REVIEWING', 'REJECTED'],
-  REVIEWING: ['ACCEPTED', 'REJECTED'],
-};
+import { ApplicationStateMachine } from '../stateMachines/ApplicationStateMachine.js';
 
 export class ApplicationService {
   constructor() {
@@ -26,7 +22,10 @@ export class ApplicationService {
     if (!verification) throw new Error('Solo estudiantes verificados pueden postularse');
 
     return withTransaction(async (connection) => {
-      return this.applicationRepo.create({ studentId: student.id, offerId }, connection);
+      return this.applicationRepo.create(
+        { studentId: student.id, offerId, status: ApplicationStateMachine.initial() },
+        connection
+      );
     });
   }
 
@@ -48,8 +47,7 @@ export class ApplicationService {
     return withTransaction(async (connection) => {
       const application = await this.applicationRepo.findById(applicationId, connection);
       if (!application) throw new Error('Postulación no existe');
-      const next = ALLOWED[application.status];
-      if (!next || !next.includes(decision)) throw new Error('Transición no permitida');
+      ApplicationStateMachine.ensureTransition(application.status, decision);
       await this.applicationRepo.updateStatus(connection, applicationId, decision);
       return { applicationId, status: decision };
     });

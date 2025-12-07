@@ -1,11 +1,11 @@
 import { pool } from '../config/database.js';
 
 export class ApplicationRepository {
-  async create({ studentId, offerId }, connection = pool) {
+  async create({ studentId, offerId, status = 'SENT' }, connection = pool) {
     const [result] = await connection.execute(
       `INSERT INTO applications (student_id, offer_id, status)
-       VALUES (?, ?, 'SENT')`,
-      [studentId, offerId]
+       VALUES (?, ?, ?)`,
+      [studentId, offerId, status]
     );
     return { applicationId: result.insertId };
   }

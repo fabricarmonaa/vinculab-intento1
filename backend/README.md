@@ -5,6 +5,7 @@
 - **CQRS**: carpetas `commands/` (mutaciones) y `queries/` (lecturas) separan flujos.
 - **Repositorios**: encapsulan SQL en `repositories/` y actúan como fuente de verdad ACID.
 - **Servicios OO**: `AuthService`, `SchoolRegistrationService`, `StudentVerificationService`, `ApplicationService`, `MailerService`, `TokenService` implementan las máquinas de estado y reglas.
+- **Máquinas de estado explícitas**: clases en `stateMachines/` (SchoolRegistration/StudentVerification/Application) centralizan estados válidos y transiciones; si la base de datos contuviera un estado no contemplado, se rechaza inmediatamente para mantener el flujo definido.
 - **Estado**:
   - `SchoolRegistration` PENDING→APPROVED/REJECTED con creación de usuario y contraseña temporal.
   - `StudentVerification` PENDING→APPROVED/REJECTED, única activa por estudiante, verificación se consulta en tabla.

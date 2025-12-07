@@ -1,11 +1,11 @@
 import { pool } from '../config/database.js';
 
 export class SchoolRegistrationRepository {
-  async createRequest({ schoolName, directorName, cue, address, email, phone }) {
+  async createRequest({ schoolName, directorName, cue, address, email, phone, status = 'PENDING' }) {
     const [result] = await pool.execute(
       `INSERT INTO school_registrations (school_name, director_name, cue, address, email, phone, status)
-       VALUES (?, ?, ?, ?, ?, ?, 'PENDING')`,
-      [schoolName, directorName, cue, address, email, phone]
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [schoolName, directorName, cue, address, email, phone, status]
     );
     return { registrationId: result.insertId };
   }
